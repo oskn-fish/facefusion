@@ -12,8 +12,12 @@ TARGET_FILE : Optional[gradio.File] = None
 TARGET_IMAGE : Optional[gradio.Image] = None
 TARGET_VIDEO : Optional[gradio.Video] = None
 
+TARGET_GRADIO_IMAGE = None
+TARGET_GRADIO_VIDEO = None
+TARGET_FILE_PATHS = None
 
-def render() -> None:
+
+def render(target_ui) -> None:
 	global TARGET_FILE
 	global TARGET_IMAGE
 	global TARGET_VIDEO
@@ -44,20 +48,29 @@ def render() -> None:
 	)
 	register_ui_component('target_image', TARGET_IMAGE)
 	register_ui_component('target_video', TARGET_VIDEO)
+	target_ui.load(restore, outputs = [ TARGET_FILE, TARGET_IMAGE, TARGET_VIDEO ])
 
 
 def listen() -> None:
 	TARGET_FILE.change(update, inputs = TARGET_FILE, outputs = [ TARGET_IMAGE, TARGET_VIDEO ])
 
+def restore() -> None:
+    return TARGET_FILE_PATHS, TARGET_GRADIO_IMAGE, TARGET_GRADIO_VIDEO
 
 def update(file : File) -> Tuple[gradio.Image, gradio.Video]:
+	global TARGET_GRADIO_IMAGE
+	global TARGET_GRADIO_VIDEO
+	global TARGET_FILE_PATHS
 	clear_reference_faces()
 	clear_static_faces()
+	TARGET_FILE_PATHS = file.name
 	if file and is_image(file.name):
 		facefusion.globals.target_path = file.name
-		return gradio.Image(value = file.name, visible = True), gradio.Video(value = None, visible = False)
+		TARGET_GRADIO_IMAGE, TARGET_GRADIO_VIDEO = gradio.Image(value = file.name, visible = True), gradio.Video(value = None, visible = False)
+		return TARGET_GRADIO_IMAGE, TARGET_GRADIO_VIDEO
 	if file and is_video(file.name):
 		facefusion.globals.target_path = file.name
-		return gradio.Image(value = None, visible = False), gradio.Video(value = file.name, visible = True)
+		TARGET_GRADIO_VIDEO, TARGET_GRADIO_VIDEO = gradio.Image(value = None, visible = False), gradio.Video(value = file.name, visible = True)
+		return TARGET_GRADIO_IMAGE, TARGET_GRADIO_VIDEO
 	facefusion.globals.target_path = None
 	return gradio.Image(value = None, visible = False), gradio.Video(value = None, visible = False)

@@ -33,12 +33,13 @@ def render() -> gradio.Blocks:
 				with gradio.Blocks():
 					common_options.render()
 			with gradio.Column(scale = 2):
-				with gradio.Blocks():
-					source.render()
-				with gradio.Blocks():
-					target.render()
-				with gradio.Blocks():
-					output.render()
+				with gradio.Blocks() as source_ui:
+					source.render(source_ui)
+				with gradio.Blocks() as target_ui:
+					target.render(target_ui)
+				with gradio.Blocks() as output_ui:
+					output.render(output_ui)
+					# output_ui.load(output.restore, outputs=)
 			with gradio.Column(scale = 3):
 				with gradio.Blocks():
 					preview.render()
